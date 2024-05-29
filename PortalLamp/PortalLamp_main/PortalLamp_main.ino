@@ -1,5 +1,5 @@
 // бот отправляет обратно сообщения из любого чата (эхо-бот)
-#define LED_PIN D7   // пин ленты
+#define LED_PIN D6   // пин ленты
 #define NUMLEDS 60      // кол-во светодиодов
 //#define BRIGHTNESS 50
 #include "FastLED.h" 
@@ -12,8 +12,8 @@ uint8_t current_brightness = 50;
 
 #define WIFI_SSID "TP-Link_2F2D"
 #define WIFI_PASS "70345896"
-#define BOT_TOKEN "6453421661:AAH8OnhkGPjzZQmuBRDWrWXd4kM14tQUung"
-#define ChatID "6453421661"
+#define BOT_TOKEN "****"
+#define ChatID "805575536"
 #include <ESP8266WiFi.h>
 #include <FastBot.h>
 FastBot bot(BOT_TOKEN);
@@ -73,42 +73,27 @@ void clock(unsigned long time) {
 //}
 
 void setup() {
-  FastLED.addLeds<WS2812B, LED_PIN, RBG>(leds, NUMLEDS);
-  FastLED.setBrightness(50);
-  //fill_solid(leds, NUMLEDS, CRGB(0, 0, 255));
-  //FastLED.show();
-
+  FastLED.addLeds<WS2812, LED_PIN, GRB>(leds, NUMLEDS);
 
   connectWiFi();
   bot.attach(newMsg);
+
+
 }
-// обработчик сообщений
+
 void newMsg(FB_msg& msg) {
   // выводим ID чата, имя юзера и текст сообщения
+  Serial.print(msg.chatID);     // ID чата 
+  Serial.print(", ");
+  Serial.print(msg.username);   // логин
+  Serial.print(", ");
   Serial.println(msg.text);     // текст
-  Serial.println(msg.chatID);
-  if (msg.text == "/ledon") {
-    fill_solid(leds, NUMLEDS, CRGB(0, 0, 255)); //Однотонная заливка в один цвет
-    FastLED.show();
-  }
-
-  else if (msg.text == "/ledoff") {
-    FastLED.clear();  // clear all pixel data
-    FastLED.show();
-  }
-
-  else if (msg.text == "/start") {
-    bot.sendMessage("Привет! Табни Menu, чтобы начать работу", msg.chatID);  
-  }
-
-  else {
-    bot.sendMessage("If there's something strange in the neighborhood, who you're gonna call? This profile! @Sci_Moth", msg.chatID);  
-  }
 }
 
 void loop() {
   bot.tick();
 }
+
 void connectWiFi() {
   delay(2000);
   Serial.begin(115200);
