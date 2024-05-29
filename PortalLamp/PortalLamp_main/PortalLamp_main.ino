@@ -18,6 +18,8 @@ uint8_t current_brightness = 50;
 #include <FastBot.h>
 FastBot bot(BOT_TOKEN);
 
+bool set_timer = 0;
+bool set_brightness = 0;
 
 void show_opposite_color(uint8_t r, uint8_t g, uint8_t b) {
   fill_solid(leds, NUMLEDS, CRGB(255- r, 255 - g, 255 - b));
@@ -74,7 +76,7 @@ void clock(unsigned long time) {
 
 void setup() {
   FastLED.addLeds<WS2812, LED_PIN, GRB>(leds, NUMLEDS);
-
+  FastLED.setBrightness(current_brightness);
   connectWiFi();
   bot.attach(newMsg);
 
@@ -93,14 +95,41 @@ void newMsg(FB_msg& msg) {
     bot.sendMessage("Привет! Я тут :) Чтобы начать работу, табни кнопку Menu", msg.chatID);
   }
 
-  if (msg.text == "/ledon") {
+  else if (msg.text == "/ledon") {
     fill_solid(leds, NUMLEDS, CRGB(255, 30, 0));
     FastLED.show();
   }
 
-  if (msg.text == "/ledoff") {
+  else if (msg.text == "/brightness") {
+    bot.sendMessage("Пожалуйста, введи яркость, которую хочешь получить (от 0 до 255). Текущая яркость: " + String(current_brightness) + ". Если передумаешь - просто нажми любую другую команду!", msg.chatID);
+    set_brightness = 1;
+  }
+
+  else if (msg.text == "/ledoff") {
     FastLED.clearData();
     FastLED.show();
+  }
+
+  else if (msg.text == "/settimer") {
+    bot.sendMessage("Пожалуйста, введи время, которое нужно засечь, в формате ЧЧ,ММ,СС. Если передумаешь - просто нажми любую другую команду!", msg.chatID);
+    set_timer = 1;
+    Serial.println(set_timer);
+  }
+
+  else if (set_timer && msg.text[2]==',') {
+     clock(msg.text.substring(0, 2).toInt() * 3600000 + msg.text.substring(3, 5).toInt() * 60000 + msg.text.substring(6, 8).toInt() * 1000);
+     set_timer = 0;
+  }
+
+  else if (set_brightness && isdigit(msg.text[0])) {
+      current_brightness = _min(msg.text.toInt(), 255);
+      FastLED.setBrightness(current_brightness);
+      FastLED.show();
+      set_brightness = 0;
+  }
+
+  else {
+    bot.sendMessage("If there's something strage in your neighborhood, who you're gonna call? This profile! @Sci_Moth", msg.chatID);
   }
 }
 
