@@ -12,7 +12,7 @@ uint8_t current_brightness = 50;
 
 #define WIFI_SSID "TP-Link_2F2D"
 #define WIFI_PASS "70345896"
-#define BOT_TOKEN "****"
+#define BOT_TOKEN "***"
 #define ChatID "805575536"
 #include <ESP8266WiFi.h>
 #include <FastBot.h>
@@ -88,10 +88,25 @@ void newMsg(FB_msg& msg) {
   Serial.print(msg.username);   // логин
   Serial.print(", ");
   Serial.println(msg.text);     // текст
+
+  if (msg.text == "/start") {
+    bot.sendMessage("Привет! Я тут :) Чтобы начать работу, табни кнопку Menu", msg.chatID);
+  }
+
+  if (msg.text == "/ledon") {
+    fill_solid(leds, NUMLEDS, CRGB(255, 30, 0));
+    FastLED.show();
+  }
+
+  if (msg.text == "/ledoff") {
+    FastLED.clearData();
+    FastLED.show();
+  }
 }
 
 void loop() {
   bot.tick();
+
 }
 
 void connectWiFi() {
@@ -105,4 +120,5 @@ void connectWiFi() {
     if (millis() > 15000) ESP.restart();
   }
   Serial.println("Connected");
+  bot.sendMessage("Все подключено и работает!", ChatID);
 }
