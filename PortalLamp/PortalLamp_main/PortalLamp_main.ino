@@ -3,7 +3,7 @@
 #define NUMLEDS 60      // кол-во светодиодов
 //#define BRIGHTNESS 50
 #include "FastLED.h" 
-//#include "pitches.h"
+#include "pitches.h"
 
 
 CRGB leds[NUMLEDS];
@@ -51,32 +51,45 @@ void clock(unsigned long time) {
       FastLED.show();
     }
   }
+
+  for (int thisNote = 0; thisNote < 8; thisNote++) {
+
+    int noteDuration = 1000 / noteDurations[thisNote];
+    tone(D1, melody[thisNote], noteDuration);
+
+    int pauseBetweenNotes = noteDuration * 1.30;
+    delay(pauseBetweenNotes);
+    noTone(8);
+  }
+  fill_solid(leds, NUMLEDS, CRGB(255, 30, 0)); //поменять на цвет, который был до выключения
+  FastLED.show();
 }
 
-//void alarm() {
-  //Still alive for later
+void alarm() {
+  //Still alive 
 
-  //pinMode(D5, OUTPUT); 
-  //digitalWrite(D5, HIGH);
+  pinMode(D1, OUTPUT); 
+  digitalWrite(D5, HIGH);
 
-  //double duration = 1;
-  //for (int i = 0; duration > 0.0; i += 2)
-  //{
-  //  int note = song[i];
-  //  duration = song[i + 1];
+  double duration = 1;
+  for (int i = 0; duration > 0.0; i += 2)
+  {
+    int note = song[i];
+    duration = song[i + 1];
 
-  // int noteDuration = (1600.0 * (duration / 4));
-  //  tone(8, note, noteDuration);
+   int noteDuration = (1600.0 * (duration / 4));
+    tone(D1, note, noteDuration);
 
-  //  int pauseBetweenNotes = noteDuration * 1.3;
-  //  delay(pauseBetweenNotes);
-  //  noTone(8);
-  //}
-//}
+    int pauseBetweenNotes = noteDuration * 1.3;
+    delay(pauseBetweenNotes);
+    noTone(8);
+  }
+}
 
 void setup() {
   FastLED.addLeds<WS2812, LED_PIN, GRB>(leds, NUMLEDS);
   FastLED.setBrightness(current_brightness);
+  FastLED.clearData();
   connectWiFi();
   bot.attach(newMsg);
 
@@ -110,6 +123,10 @@ void newMsg(FB_msg& msg) {
     FastLED.show();
   }
 
+  else if (msg.text == "/melody") {
+    alarm();
+  }
+
   else if (msg.text == "/settimer") {
     bot.sendMessage("Пожалуйста, введи время, которое нужно засечь, в формате ЧЧ,ММ,СС. Если передумаешь - просто нажми любую другую команду!", msg.chatID);
     set_timer = 1;
@@ -129,13 +146,12 @@ void newMsg(FB_msg& msg) {
   }
 
   else {
-    bot.sendMessage("If there's something strage in your neighborhood, who you're gonna call? This profile! @Sci_Moth", msg.chatID);
+    bot.sendMessage("If there's something strage in your neighborhood, who you're gonna call? This profile!", msg.chatID);
   }
 }
 
 void loop() {
   bot.tick();
-
 }
 
 void connectWiFi() {
